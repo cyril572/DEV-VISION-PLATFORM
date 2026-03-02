@@ -3,26 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>Dev Vision Portfolio</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
 body{
     background:#0f172a;
     color:white;
     font-family:Arial;
     margin:0;
 }
-
 .container{
     max-width:900px;
     margin:auto;
     padding:20px;
 }
-
-/* Buttons */
-
 button{
     padding:12px 20px;
     background:#1e3a8a;
@@ -31,14 +25,10 @@ button{
     color:white;
     cursor:pointer;
     margin-top:15px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
-
-/* Form */
-
-#portfolioForm{
-    display:none;
-}
+#portfolioForm{ display:none; }
+#portfolioView{ display:none; }
 
 input,textarea{
     width:90%;
@@ -49,40 +39,18 @@ input,textarea{
     background:#1e3a8a;
     color:white;
 }
-
-input::placeholder,
-textarea::placeholder{
-    color:#cbd5e1;
-}
-
-/* Portfolio View */
-
-#portfolioView{
-    display:none;
-}
-
 .profile-card{
     background:#1e3a8a;
     padding:40px;
     border-radius:15px;
     text-align:center;
 }
-
-.section{
-    margin-top:40px;
-}
-
-.section h2{
-    border-left:5px solid #1e3a8a;
-    padding-left:10px;
-}
-
+.section{ margin-top:40px; }
 .about-box{
     background:#1e3a8a;
     padding:25px;
     border-radius:12px;
 }
-
 .skills span{
     display:inline-block;
     background:#0f172a;
@@ -90,26 +58,7 @@ textarea::placeholder{
     margin:6px;
     border-radius:8px;
 }
-
-.work-card{
-    background:#1e3a8a;
-    padding:20px;
-    border-radius:12px;
-    margin-top:15px;
-}
-
-.work-card a{
-    color:#38bdf8;
-    text-decoration:none;
-}
- @media (max-width:700px) {
-    body h1{
-        font-size:26px;
-    }
- }
-
 </style>
-
 </head>
 
 <body>
@@ -120,15 +69,12 @@ textarea::placeholder{
 
 <button id="editBtn">Create / Edit Portfolio</button>
 
-<!-- PORTFOLIO FORM -->
-
+<!-- FORM -->
 <div id="portfolioForm">
 
 <input id="name" placeholder="Full Name">
 <input id="title" placeholder="Professional Title">
-
 <textarea id="about" placeholder="About Me"></textarea>
-
 <input id="skills" placeholder="Skills (comma separated)">
 <input id="extra" placeholder="Extra Portfolio Info">
 
@@ -136,15 +82,12 @@ textarea::placeholder{
 
 </div>
 
-<!-- PORTFOLIO VIEW -->
-
+<!-- VIEW -->
 <div id="portfolioView">
 
 <div class="profile-card">
-
 <h1 id="previewName"></h1>
 <p id="previewTitle"></p>
-
 </div>
 
 <div class="section">
@@ -160,34 +103,12 @@ textarea::placeholder{
 </div>
 
 <div class="section">
-<h2>My Works</h2>
-<a href="work.html"><p> Add Works</p></a>
-<div id="previewWorks"></div>
-</div>
-
-<div class="section">
-
-<h2>Dev Vision Portfolio Link</h2>
-
-<div style="display:flex; gap:10px; flex-wrap:wrap;">
-
-<input id="shareLink" readonly style="
-flex:1;
-padding:12px;
-border:none;
-border-radius:6px;
-background:#1e3a8a;
-color:white;
-">
-
+<h2>Portfolio Link</h2>
+<input id="shareLink" readonly>
 <button id="copyLinkBtn">Copy Link</button>
-
 </div>
 
 </div>
-
-</div>
-
 </div>
 
 <script type="module">
@@ -197,8 +118,9 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, getDoc, setDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig={
-    apiKey: "AIzaSyAjPnE3Km8yo_57t6kpUc7Jj9TtXqeBKew",
+/* 🔥 PUT YOUR REAL FIREBASE CONFIG */
+const firebaseConfig = {
+      apiKey: "AIzaSyAjPnE3Km8yo_57t6kpUc7Jj9TtXqeBKew",
   authDomain: "website-53417.firebaseapp.com",
   projectId: "website-53417",
   storageBucket: "website-53417.firebasestorage.app",
@@ -207,27 +129,42 @@ const firebaseConfig={
   measurementId: "G-QFJHJHLHC4"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-let user=null;
+let currentUser = null;
+
+/* DOM ELEMENTS */
+const portfolioForm = document.getElementById("portfolioForm");
+const portfolioView = document.getElementById("portfolioView");
+const editBtn = document.getElementById("editBtn");
+const saveBtn = document.getElementById("saveBtn");
+const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+const nameInput = document.getElementById("name");
+const titleInput = document.getElementById("title");
+const aboutInput = document.getElementById("about");
+const skillsInput = document.getElementById("skills");
+const extraInput = document.getElementById("extra");
+
+const previewName = document.getElementById("previewName");
+const previewTitle = document.getElementById("previewTitle");
+const previewAbout = document.getElementById("previewAbout");
+const previewSkills = document.getElementById("previewSkills");
+const shareLink = document.getElementById("shareLink");
 
 /* AUTH CHECK */
+onAuthStateChanged(auth, async (user)=>{
 
-onAuthStateChanged(auth,async u=>{
-
-if(!u){
+if(!user){
 window.location.href="login.html";
 return;
 }
 
-user=u;
+currentUser = user;
 
-const uid=new URLSearchParams(window.location.search)
-.get("uid") || user.uid;
-
-const snap=await getDoc(doc(db,"users",uid));
+const snap = await getDoc(doc(db,"users",user.uid));
 
 if(snap.exists()){
 showPortfolio(snap.data());
@@ -238,99 +175,68 @@ portfolioForm.style.display="block";
 });
 
 /* EDIT BUTTON */
-
-editBtn.onclick=()=>{
+editBtn.addEventListener("click",()=>{
 portfolioForm.style.display="block";
 portfolioView.style.display="none";
-};
+});
 
 /* SAVE PORTFOLIO */
+saveBtn.addEventListener("click", async ()=>{
 
-saveBtn.onclick=async()=>{
+if(!currentUser) return;
 
-if(!user) return;
-
-const data={
-name:name.value,
-title:title.value,
-about:about.value,
-skills:skills.value
-.split(",")
-.map(s=>s.trim())
-.filter(s=>s),
-extra:extra.value
+const data = {
+name: nameInput.value.trim(),
+title: titleInput.value.trim(),
+about: aboutInput.value.trim(),
+skills: skillsInput.value.trim(),
+extra: extraInput.value.trim()
 };
 
-await setDoc(doc(db,"users",user.uid),data,{merge:true});
+await setDoc(doc(db,"users",currentUser.uid), data, {merge:true});
 
 alert("Portfolio Saved 🔥");
 
 showPortfolio(data);
 
-};
+});
 
-/* DISPLAY PORTFOLIO */
-
+/* SHOW PORTFOLIO */
 function showPortfolio(data){
 
 portfolioForm.style.display="none";
 portfolioView.style.display="block";
 
-previewName.innerText=data?.name || "";
-previewTitle.innerText=data?.title || "";
-previewAbout.innerText=data?.about || "";
+previewName.innerText = data.name || "";
+previewTitle.innerText = data.title || "";
+previewAbout.innerText = data.about || "";
 
-previewSkills.innerHTML="";
+previewSkills.innerHTML = "";
 
-data?.skills?.forEach(skill=>{
-let span=document.createElement("span");
-span.innerText=skill;
+if(data.skills){
+data.skills.split(",").forEach(skill=>{
+const span = document.createElement("span");
+span.innerText = skill.trim();
 previewSkills.appendChild(span);
 });
-
-/* Works */
-
-previewWorks.innerHTML="";
-
-data?.works?.forEach(work=>{
-
-let div=document.createElement("div");
-div.className="work-card";
-
-div.innerHTML=`
-<p>${work.description || ""}</p>
-<a href="${work.link}" target="_blank">
-View Work
-</a>
-`;
-
-previewWorks.appendChild(div);
-
-});
+}
 
 generateLink();
 
 }
 
-/* LINK GENERATOR */
-
+/* GENERATE LINK */
 function generateLink(){
-
-shareLink.value=window.location.origin+
-"/portfolio.html?uid="+user.uid;
-
+shareLink.value =
+window.location.origin + "/portfolio.html?uid=" + currentUser.uid;
 }
 
 /* COPY LINK */
-
-copyLinkBtn.onclick=()=>{
-
+copyLinkBtn.addEventListener("click",()=>{
 shareLink.select();
 document.execCommand("copy");
-
 alert("Link Copied 🔥");
-
-};
+});
 
 </script>
 
