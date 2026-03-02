@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Add Works | Dev Vision</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+    background:#0f172a;
+    color:white;
+    font-family:Arial;
+    margin:0;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+    padding:20px;
+}
+
+h2{
+    text-align:center;
+}
+
+input,textarea{
+    width:90%;
+    padding:12px;
+    margin-top:15px;
+    border-radius:6px;
+    border:none;
+    background:#1e3a8a;
+    color:white;
+}
+
+input::placeholder,
+textarea::placeholder{
+    color:#cbd5e1;
+}
+
+button{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    background:#1e3a8a;
+    border:none;
+    border-radius:8px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.work-box{
+    background:#1e3a8a;
+    padding:20px;
+    border-radius:12px;
+    margin-top:25px;
+}
+
+/* Mobile Responsive */
+
+@media(max-width:600px){
+.container{
+padding:15px;
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Add Your Works</h2>
+
+<div class="work-box">
+
+<input id="work1" placeholder="Work Link 1">
+<textarea id="desc1" placeholder="Description 1"></textarea>
+
+<input id="work2" placeholder="Work Link 2">
+<textarea id="desc2" placeholder="Description 2"></textarea>
+
+<input id="work3" placeholder="Work Link 3">
+<textarea id="desc3" placeholder="Description 3"></textarea>
+
+<input id="work4" placeholder="Work Link 4">
+<textarea id="desc4" placeholder="Description 4"></textarea>
+
+<input id="work5" placeholder="Work Link 5">
+<textarea id="desc5" placeholder="Description 5"></textarea>
+
+</div>
+
+<button id="saveWork">Save Works</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig={
+   apiKey: "AIzaSyAjPnE3Km8yo_57t6kpUc7Jj9TtXqeBKew",
+  authDomain: "website-53417.firebaseapp.com",
+  projectId: "website-53417",
+  storageBucket: "website-53417.firebasestorage.app",
+  messagingSenderId: "1049856174962",
+  appId: "1:1049856174962:web:1817fdba2bbbae9c6a8beb",
+  measurementId: "G-QFJHJHLHC4"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let user=null;
+
+/* AUTH */
+
+onAuthStateChanged(auth,u=>{
+
+if(!u){
+window.location.href="login.html";
+return;
+}
+
+user=u;
+
+});
+
+/* SAVE WORKS */
+
+document.getElementById("saveWork").onclick=async()=>{
+
+if(!user) return;
+
+const works=[];
+
+/* Collect 5 Works */
+
+for(let i=1;i<=5;i++){
+
+const link=document.getElementById("work"+i).value;
+const desc=document.getElementById("desc"+i).value;
+
+if(link){
+
+works.push({
+link:link,
+description:desc
+});
+
+}
+
+}
+
+await setDoc(doc(db,"users",user.uid),{
+works:works
+},{merge:true});
+
+alert("Works Saved 🔥");
+
+window.location.href="portfolio.html";
+
+};
+
+</script>
+
+</body>
+</html>

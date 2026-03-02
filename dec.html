@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dev Vision Documentation</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+/* ===== GLOBAL ===== */
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:30px;
+}
+
+/* ===== NAVIGATION ===== */
+
+.nav{
+display:flex;
+gap:15px;
+flex-wrap:wrap;
+}
+
+.nav button{
+padding:12px 18px;
+background:#1e3a8a;
+border:none;
+border-radius:6px;
+color:white;
+cursor:pointer;
+}
+
+/* ===== DOCUMENTATION SECTION ===== */
+
+.section{
+display:none;
+background:#1e3a8a;
+padding:25px;
+border-radius:12px;
+margin-top:25px;
+}
+
+/* Default Show */
+
+#intro{
+display:block;
+}
+
+h2{
+border-left:5px solid #38bdf8;
+padding-left:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🚀 Dev Vision Documentation</h1>
+
+<div class="nav">
+<button onclick="showDoc('intro')">Introduction</button>
+<button onclick="showDoc('portfolio')">Portfolio Guide</button>
+<button onclick="showDoc('work')">Work Upload</button>
+<button onclick="showDoc('analytics')">Analytics</button>
+</div>
+
+<!-- Documentation Sections -->
+
+<div id="intro" class="section">
+<h2>Introduction</h2>
+<p>
+Dev Vision is a platform designed to help young African developers grow their careers by helping them build professional portfolios and showcase their skills to the world.
+</p>
+</div>
+
+<div id="portfolio" class="section">
+<h2>Portfolio Creation</h2>
+<p>
+1. Login to Dev Vision  
+2. Go to Portfolio Page  
+3. Fill Name, Title, About and Skills  
+4. Click Save Portfolio  
+</p>
+</div>
+
+<div id="work" class="section">
+<h2>Work Upload System</h2>
+<p>
+Go to Work Page → Add project links and description → Save.
+Your work will automatically appear on your portfolio profile.
+</p>
+</div>
+
+<div id="analytics" class="section">
+<h2>Analytics System</h2>
+<p>
+Dashboard shows:
+
+• Portfolio views  
+• Number of works  
+• Visibility ranking score  
+</p>
+</div>
+
+</div>
+
+<script>
+
+/* Documentation Navigation */
+
+function showDoc(id){
+
+document.querySelectorAll(".section").forEach(sec=>{
+sec.style.display="none";
+});
+
+document.getElementById(id).style.display="block";
+
+}
+
+</script>
+
+</body>
+</html>

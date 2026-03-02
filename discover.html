@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dev Vision Discover Developers</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:25px;
+}
+
+/* Search Box */
+
+input{
+width:90%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:#1e3a8a;
+color:white;
+margin-bottom:25px;
+}
+
+/* Developer Card */
+
+.card{
+background:#1e3a8a;
+padding:25px;
+border-radius:12px;
+margin-top:20px;
+}
+
+button{
+padding:10px 18px;
+background:#0f172a;
+border:none;
+border-radius:6px;
+color:white;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🚀 Discover Developers</h2>
+
+<input id="searchBox" placeholder="Search developer name or skill">
+
+<div id="developerList"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* Firebase Config */
+
+const firebaseConfig={
+     apiKey: "AIzaSyAjPnE3Km8yo_57t6kpUc7Jj9TtXqeBKew",
+  authDomain: "website-53417.firebaseapp.com",
+  projectId: "website-53417",
+  storageBucket: "website-53417.firebasestorage.app",
+  messagingSenderId: "1049856174962",
+  appId: "1:1049856174962:web:1817fdba2bbbae9c6a8beb",
+  measurementId: "G-QFJHJHLHC4"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+let developers=[];
+
+/* Load Developers */
+
+async function loadDevelopers(){
+
+const snap = await getDocs(collection(db,"users"));
+
+developers=[];
+
+snap.forEach(doc=>{
+developers.push({
+id:doc.id,
+...doc.data()
+});
+});
+
+displayDevelopers(developers);
+
+}
+
+/* Display Developers */
+
+function displayDevelopers(list){
+
+developerList.innerHTML="";
+
+list.forEach(dev=>{
+
+let div=document.createElement("div");
+
+div.className="card";
+
+div.innerHTML=`
+<h3>${dev.name||""}</h3>
+<p>${dev.title||""}</p>
+<p>Skills: ${(dev.skills||[]).join(", ")}</p>
+
+<button onclick="viewProfile('${dev.id}')">
+View Portfolio
+</button>
+`;
+
+developerList.appendChild(div);
+
+});
+
+}
+
+/* Search System */
+
+searchBox.onkeyup=()=>{
+
+let value=searchBox.value.toLowerCase();
+
+let filtered=developers.filter(dev=>
+(dev.name||"").toLowerCase().includes(value) ||
+(dev.skills||[]).join(" ").toLowerCase().includes(value)
+);
+
+displayDevelopers(filtered);
+
+};
+
+/* Profile Viewer */
+
+window.viewProfile=function(id){
+
+window.location.href="portfolio.html?uid="+id;
+
+};
+
+loadDevelopers();
+
+</script>
+
+</body>
+</html>

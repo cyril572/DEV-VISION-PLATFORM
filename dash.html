@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dev Vision Legend Analytics</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:25px;
+}
+
+/* Header */
+
+h1{
+border-left:6px solid #1e3a8a;
+padding-left:15px;
+}
+
+/* Grid Layout */
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:25px;
+}
+
+/* Cards */
+
+.card{
+background:#1e3a8a;
+padding:30px;
+border-radius:15px;
+}
+
+/* Score Style */
+
+.score{
+font-size:70px;
+font-weight:bold;
+text-align:center;
+}
+
+/* Responsive */
+
+@media(max-width:600px){
+.score{
+font-size:50px;
+}
+h1{
+    font-size: 20px;
+}
+.container{
+    padding: 15px;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🚀 Dev Vision Analytics</h1>
+
+<div class="grid">
+
+<div class="card">
+<h3>Profile Analytics</h3>
+
+<p>Name: <span id="dashName"></span></p>
+<p>Title: <span id="dashTitle"></span></p>
+<p>Portfolio Views: <span id="dashViews"></span></p>
+<p>Total Works: <span id="dashWorks"></span></p>
+
+</div>
+
+<div class="card">
+<h3>🔥 Visibility Ranking Score</h3>
+<div class="score" id="score">0</div>
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* Firebase Config */
+
+const firebaseConfig={
+   apiKey: "AIzaSyAjPnE3Km8yo_57t6kpUc7Jj9TtXqeBKew",
+  authDomain: "website-53417.firebaseapp.com",
+  projectId: "website-53417",
+  storageBucket: "website-53417.firebasestorage.app",
+  messagingSenderId: "1049856174962",
+  appId: "1:1049856174962:web:1817fdba2bbbae9c6a8beb",
+  measurementId: "G-QFJHJHLHC4"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+/* Load Analytics */
+
+onAuthStateChanged(auth,async user=>{
+
+if(!user){
+window.location.href="login.html";
+return;
+}
+
+const snap=await getDoc(doc(db,"users",user.uid));
+
+if(snap.exists()){
+
+const data=snap.data();
+
+dashName.innerText=data.name||"";
+dashTitle.innerText=data.title||"";
+dashViews.innerText=data.profileViews||0;
+dashWorks.innerText=data.works?data.works.length:0;
+
+/* Legend Visibility Score */
+
+score.innerText=
+((data.profileViews||0)*0.7+
+(data.works?data.works.length:0)*0.5).toFixed(0);
+
+}
+
+});
+
+</script>
+
+</body>
+</html>

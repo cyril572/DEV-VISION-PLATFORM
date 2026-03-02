@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dev Vision Feed</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+padding:25px;
+}
+
+textarea{
+width:90%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:#1e3a8a;
+color:white;
+margin-top:10px;
+}
+
+button{
+padding:12px 18px;
+background:#1e3a8a;
+border:none;
+border-radius:6px;
+color:white;
+cursor:pointer;
+margin-top:10px;
+}
+
+.feed-card{
+background:#1e3a8a;
+padding:25px;
+border-radius:12px;
+margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🚀 Dev Vision Developer Feed</h2>
+
+<textarea id="postContent" placeholder="Share update or work..."></textarea>
+
+<button id="postBtn">Post Update</button>
+
+<div id="feedContainer"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+getFirestore,
+collection,
+addDoc,
+query,
+orderBy,
+onSnapshot,
+doc,
+updateDoc,
+arrayUnion,
+increment
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* Firebase Config */
+
+const firebaseConfig = {
+   apiKey: "AIzaSyAjPnE3Km8yo_57t6kpUc7Jj9TtXqeBKew",
+  authDomain: "website-53417.firebaseapp.com",
+  projectId: "website-53417",
+  storageBucket: "website-53417.firebasestorage.app",
+  messagingSenderId: "1049856174962",
+  appId: "1:1049856174962:web:1817fdba2bbbae9c6a8beb",
+  measurementId: "G-QFJHJHLHC4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user=null;
+
+/* Auth */
+
+onAuthStateChanged(auth,u=>{
+if(!u){
+window.location.href="login.html";
+return;
+}
+user=u;
+});
+
+/* Post Feed */
+
+postBtn.onclick=async()=>{
+
+if(!user) return;
+
+if(!postContent.value.trim()) return;
+
+await addDoc(collection(db,"feedPosts"),{
+content:postContent.value,
+likes:0,
+comments:[],
+timestamp:new Date(),
+userId:user.uid
+});
+
+postContent.value="";
+};
+
+/* Like Post */
+
+window.likePost = async function(postId){
+
+await updateDoc(doc(db,"feedPosts",postId),{
+likes:increment(1)
+});
+
+};
+
+/* Add Comment */
+
+window.addComment = async function(postId){
+
+let input = document.getElementById("commentInput_"+postId);
+
+if(!input) return;
+
+if(!input.value.trim()) return;
+
+await updateDoc(doc(db,"feedPosts",postId),{
+comments:arrayUnion({
+userId:user.uid,
+text:input.value,
+timestamp:new Date()
+})
+});
+
+input.value="";
+
+};
+
+/* Feed Renderer */
+
+function renderFeedPost(docId,data){
+
+let div=document.createElement("div");
+
+div.className="feed-card";
+
+let commentsHTML="";
+
+if(data.comments){
+
+data.comments.forEach(c=>{
+commentsHTML+=`<p>💬 ${c.text}</p>`;
+});
+
+}
+
+div.innerHTML=`
+
+<p>${data.content || ""}</p>
+
+<p>❤️ Likes: ${data.likes || 0}</p>
+
+<button onclick="likePost('${docId}')">Like</button>
+
+<input id="commentInput_${docId}" placeholder="Write comment">
+
+<button onclick="addComment('${docId}')">Comment</button>
+
+<div>${commentsHTML}</div>
+
+`;
+
+feedContainer.appendChild(div);
+
+}
+
+/* Real-time Feed Loader */
+
+const q=query(
+collection(db,"feedPosts"),
+orderBy("timestamp","desc")
+);
+
+onSnapshot(q,snap=>{
+
+feedContainer.innerHTML="";
+
+snap.forEach(doc=>{
+renderFeedPost(doc.id,doc.data());
+});
+
+});
+
+</script>
+
+</body>
+</html>

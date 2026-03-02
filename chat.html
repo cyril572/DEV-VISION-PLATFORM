@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Job Messenger</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:#1e3a8a;
+}
+
+.container{
+max-width:800px;
+margin:auto;
+padding:20px;
+}
+
+/* Chat Box */
+.chat-box{
+height:70vh;
+overflow-y:auto;
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+.message{
+padding:12px;
+margin:10px;
+border-radius:10px;
+max-width:70%;
+position:relative;
+}
+
+.me{
+background:#0f172a;
+color:white;
+margin-left:auto;
+}
+
+.other{
+background:#e2e8f0;
+}
+
+/* Input */
+.input-box{
+display:flex;
+margin-top:15px;
+}
+
+input{
+flex:1;
+padding:12px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+padding:12px;
+margin-left:10px;
+background:#0f172a;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2 style="color: white;">📢 Job Messenger
+<span id="msgBadge"
+style="background:red;color:white;padding:3px 8px;border-radius:50%;font-size:12px;">0</span>
+</h2>
+
+<div class="chat-box" id="chatBox"></div>
+
+<div class="input-box">
+<input type="text" id="messageText" placeholder="Write job message...">
+<button onclick="sendMessage()">Send</button>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+getAuth,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+getFirestore,
+collection,
+addDoc,
+query,
+orderBy,
+onSnapshot,
+serverTimestamp,
+deleteDoc,
+doc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* Firebase Config */
+const firebaseConfig={
+  apiKey: "AIzaSyAjPnE3Km8yo_57t6kpUc7Jj9TtXqeBKew",
+  authDomain: "website-53417.firebaseapp.com",
+  projectId: "website-53417",
+  storageBucket: "website-53417.firebasestorage.app",
+  messagingSenderId: "1049856174962",
+  appId: "1:1049856174962:web:1817fdba2bbbae9c6a8beb",
+  measurementId: "G-QFJHJHLHC4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser;
+
+/* AUTH GUARD */
+onAuthStateChanged(auth,user=>{
+if(!user){
+location.href="auth.html";
+return;
+}
+currentUser=user;
+loadMessages();
+listenNotification();
+});
+
+/* LOAD MESSAGES */
+function loadMessages(){
+
+const q = query(
+collection(db,"messages"),
+orderBy("timestamp","asc")
+);
+
+onSnapshot(q,snapshot=>{
+chatBox.innerHTML="";
+
+snapshot.forEach(docSnap=>{
+const data = docSnap.data();
+const time = data.timestamp
+? new Date(data.timestamp.seconds * 1000).toLocaleTimeString()
+: "";
+
+const div = document.createElement("div");
+div.className = data.senderId===currentUser.uid ? "message me":"message other";
+
+/* Delete button for sender only */
+let deleteButton="";
+if(data.senderId===currentUser.uid){
+deleteButton = `
+<button onclick="deleteMessage('${docSnap.id}')"
+style="
+background:red;color:white;border:none;
+padding:4px 8px;border-radius:6px;
+font-size:11px;margin-left:10px;cursor:pointer;">
+Delete
+</button>`;
+}
+
+div.innerHTML=`
+<p>${data.text}</p>
+<small>${data.senderName || ""} • ${time}</small>
+${deleteButton}
+`;
+
+chatBox.appendChild(div);
+});
+
+chatBox.scrollTop = chatBox.scrollHeight;
+});
+}
+
+/* SEND MESSAGE */
+window.sendMessage=async function(){
+const text=messageText.value;
+if(!text) return;
+
+await addDoc(collection(db,"messages"),{
+text:text,
+senderId:currentUser.uid,
+senderName:currentUser.email,
+timestamp:serverTimestamp()
+});
+
+messageText.value="";
+}
+
+/* DELETE MESSAGE */
+window.deleteMessage=async function(messageId){
+if(!confirm("Delete this message?")) return;
+try{
+await deleteDoc(doc(db,"messages",messageId));
+}catch(err){
+alert(err.message);
+}
+}
+
+/* NOTIFICATION BADGE */
+function listenNotification(){
+onSnapshot(
+collection(db,"messages"),
+snapshot=>{
+msgBadge.innerText = snapshot.size;
+}
+);
+}
+
+</script>
+
+</body>
+</html>
